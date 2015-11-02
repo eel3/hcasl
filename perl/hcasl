@@ -1,0 +1,100 @@
+#!/usr/bin/env perl
+# encoding: utf-8
+# -*- coding: utf-8 -*-
+# vim:fileencoding=UTF-8
+# @(#) Command line tool for "head -c N && shift 1 byte" loop. Version 1.0.0.20151102
+
+=head1 DESCRIPTION
+
+brief   Command line tool for "head -c N && shift 1 byte" loop
+author  eel3
+date    2015-11-02
+
+note  perl 5.14.2 @ Ubuntu 12.04.5 LTS x86 32bit
+note  perl 5.22.0 cygwin-64bit @ Windows 7 Ultimate 64bit SP1
+
+=head1 SYNOPSIS
+
+  hcasl [option] [file...]
+
+  -n, --bytes <N>
+    print the N bytes per line (N >= 1)
+  -o, --output <FILE>
+    place output in file FILE
+
+=cut
+
+use 5.014;
+use strict;
+use warnings;
+
+use Getopt::Long qw/:config auto_help bundling no_ignore_case posix_default/;
+use Pod::Usage qw/pod2usage/;
+
+sub error {
+    say STDERR @_;
+    exit 1;
+}
+
+sub hcasl {
+    my ($istream, $ostream, $bytes, $buf) = @_;
+
+    while (defined(my $c = getc $istream)) {
+        push @$buf, $c;
+        if (@$buf >= $bytes) {
+            say $ostream join '', @$buf;
+            shift @$buf;
+        }
+    }
+}
+
+sub main {
+    GetOptions(
+        \my %opt, qw/
+        bytes|n=i
+        output|o=s
+        version|v
+    /) or pod2usage 1;
+
+    if (exists $opt{version}) {
+        say STDERR "$0 1.0.0";
+        exit;
+    }
+
+    if (exists $opt{bytes}) {
+        $opt{bytes} >= 1 or pod2usage 1;
+    } else {
+        $opt{bytes} = 8;
+    }
+
+    my $ostream = *STDOUT;
+    if (exists $opt{output} and $opt{output} ne '-') {
+        open $ostream, '>', $opt{output}
+            or error("$0: $opt{output}: cannot open");
+    }
+
+    my @buf = ();
+    if (@ARGV == 0) {
+        hcasl(*STDIN, $ostream, $opt{bytes}, \@buf);
+    } else {
+        my $istream;
+        for (@ARGV) {
+            if ($_ eq '-') {
+                $istream = *STDIN;
+            } else {
+                unless (open $istream, '<', $_) {
+                    say STDERR "$0: $_: cannot open";
+                    next;
+                }
+            }
+            hcasl($istream, $ostream, $opt{bytes}, \@buf);
+            close $istream unless $istream eq *STDIN;
+        }
+    }
+
+    close $ostream unless $ostream eq *STDOUT;
+
+    exit;
+}
+
+main();

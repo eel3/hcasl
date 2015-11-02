@@ -1,0 +1,45 @@
+#!/usr/bin/env ruby
+# encoding: utf-8
+# -*- coding: utf-8 -*-
+# vim:fileencoding=UTF-8
+# @(#) Command line tool for "head -c N && shift 1 char" loop. Version 1.0.0.20151015
+
+require 'optparse'
+
+chars = 8
+ostream = STDOUT
+
+OptionParser.new {|op|
+  begin
+    op.banner = "usage: #{op.program_name} [options] [file...]"
+    op.release = '2015-10-10'
+    op.summary_width = 80
+    op.version = '1.0.0'
+
+    output = '-'
+
+    op.on('-n', '--chars N', Integer, 'print the N characters per line (N >= 1)') {|v|
+      chars = v
+    }
+    op.on('-o', '--output FILE', 'place output in file FILE') {|v|
+      output = v
+    }
+    op.permute!
+
+    abort op.help unless chars >= 1
+    ostream = File.open(output, 'w') unless output == '-'
+  rescue
+    abort op.help
+  end
+}
+
+buf = []
+ARGF.each_char do |c|
+  buf.push c
+  if buf.size >= chars
+    ostream.puts buf.join('')
+    buf.shift
+  end
+end
+
+ostream.close unless ostream == STDOUT

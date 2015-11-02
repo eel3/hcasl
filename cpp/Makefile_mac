@@ -1,0 +1,13 @@
+# @brief   hcasl Makefile for Mac OS X.
+# @author  eel3
+# @date    2015/10/07
+#
+# @note
+# - Apple LLVM 6.0 (clang-600.0.57, Xcode 6.2) on Mac OS X 10.9.5
+
+CXX            := xcrun c++
+SDKROOT        := $(shell xcodebuild -version -sdk macosx | sed -n '/^Path: /s///p')
+CPPFLAGS        = -isysroot "$(SDKROOT)"
+TARGET_ARCH    := -mmacosx-version-min=10.9 -arch i386 -arch x86_64
+
+include ./Makefile

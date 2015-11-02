@@ -1,0 +1,73 @@
+#!/usr/bin/env tclsh
+# encoding: utf-8
+# -*- coding: utf-8 -*-
+# vim:fileencoding=UTF-8
+# @(#) Command line tool for "head -c N && shift 1 char" loop. Version 1.0.0.20151103
+
+package require Tcl 8.6
+package require cmdline 1.5
+
+set auto_noexec 1
+
+proc hcasl {input output chars buf} {
+    set c [read $input 1]
+    if {[eof $input]} {return $buf}
+    lappend buf $c
+    if {[llength $buf] >= $chars} {
+        puts $output [join $buf ""]
+        set buf [lrange $buf 1 end]
+    }
+    tailcall hcasl $input $output $chars $buf
+}
+
+proc main {argv} {
+    set options {
+        {n.arg 8 "print the N characters per line (N >= 1). default is"}
+        {o.arg - "place output in file, or stdout (`-'). default is"}
+        {v       "show program's version number and exit"}
+    }
+    set usage "\[option] \[file...]"
+    set version "[::cmdline::getArgv0] 1.0.0"
+
+    try {
+        array set params [::cmdline::getoptions argv $options $usage]
+    } trap {CMDLINE USAGE} {msg o} {
+        puts stderr $msg
+        exit 1
+    }
+    if {$params(v)} {
+        puts $version
+        exit 0
+    }
+    if {$params(n) < 1} {
+        puts stderr [::cmdline::usage $options $usage]
+        exit 1
+    }
+
+    if {[catch {if {$params(o) == "-"} {expr {{stdout}}} else {open $params(o) w}} output]} {
+        puts stderr $output
+        exit 1
+    }
+    if {[llength $argv] <= 0} {lappend argv -}
+
+    set result 0
+    set buf [list]
+
+    foreach file $argv {
+        if {[catch {if {$file == "-"} {expr {{stdin}}} else {open $file r}} input]} {
+            puts stderr $input
+            set result 1
+            continue
+        }
+
+        set buf [hcasl $input $output $params(n) $buf]
+
+        if {$file != "-"} {close $input}
+    }
+
+    if {$params(o) != "-"} {close $output}
+
+    exit $result
+}
+
+main $argv

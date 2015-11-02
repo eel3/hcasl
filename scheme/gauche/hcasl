@@ -1,0 +1,75 @@
+#!/usr/bin/env gosh
+;;; -*- coding: utf-8 -*-
+;;; vim:fileencoding=UTF-8
+;;;
+;;; Command line tool for "head -c N && shift 1 byte" loop. Version 1.0.0.20151024
+
+(use file.filter)
+(use gauche.parseopt)
+
+(define (print-to-output-port oport . args)
+  (for-each (cut display <> oport) args)
+  (newline oport))
+
+(define (print-error . args)
+  (apply print-to-output-port (current-error-port) args))
+
+(define (hcasl bytes files output)
+  (define (process-with-output output proc . restargs)
+    (cond [(output-port? output) (proc output)]
+          [(string=? output "-") (proc (current-output-port))]
+          [else (apply call-with-output-file output proc restargs)]))
+
+  (car (process-with-output
+        output
+        (lambda (oport)
+          (fold (^[input stat]
+                  (guard (e [else (print-error (ref e 'message))
+                                  (list 1 (cadr stat))])
+                         (file-filter-fold
+                          (^[c stat oport]
+                            (let ([lst (cons c (cadr stat))]
+                                  [code (car stat)])
+                              (cond [(< (length lst) bytes) (list code lst)]
+                                    [else
+                                     (for-each (cut write-byte <> oport) (reverse lst))
+                                     (newline oport)
+                                     (list code (take lst (- bytes 1)))])))
+                          stat :reader read-byte :input input :output oport :keep-output? #t)))
+                '(0 ())
+                (if (null? files)
+                    (list (current-input-port))
+                    (map (^x (if (string=? x "-") (current-input-port) x))
+                         files)))))))
+
+(define (main args)
+  (define (version progname)
+    (print progname " 1.0.0")
+    (exit))
+
+  (define (usage progname :key (code 0) (oport (current-output-port)))
+    (print-to-output-port oport
+                            "usage: " progname " [options] [file...]\
+                           \n    -n, --bytes <N>\
+                           \n      print the N bytes per line (N >= 1)\
+                           \n    -o, --output <FILE>\
+                           \n      place output in file FILE")
+    (exit code))
+
+  (define (usage-on-error progname)
+    (usage progname :code 1 :oport (current-error-port)))
+
+  (let ([progname (sys-basename (car args))])
+    (let-args (cdr args)
+              ([bytes  "n|bytes=i" 8]
+               [output "o|output=s" "-"]
+               [#f     "h|help" => (cut usage progname)]
+               [#f     "v|version" => (cut version progname)]
+               [else (opt . _)
+                     (print-error "Unknown option: " opt)
+                     (usage-on-error progname)]
+               . files)
+              (unless (>= bytes 1)
+                      (print-error "Option -n, --bytes <N>: must N >= 1")
+                      (usage-on-error progname))
+              (hcasl bytes files output))))
