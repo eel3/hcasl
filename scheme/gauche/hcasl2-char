@@ -21,7 +21,7 @@
 ;; return - 0 on success, 1 on error
 (define (process-multi inputs n)
   (fold (^[in c]
-          (guard (e [else (format (current-error-port) "~s\n" (~ e'message))
+          (guard (e [else (format (current-error-port) "~a\n" (~ e'message))
                           1])
             (cond [(port? in) (process-1 in n)]
                   [(equal? in "-") (process-1 (current-input-port) n)]
@@ -35,10 +35,9 @@
     (with-output-to-file output (cut process-multi inputs n))))
 
 (define (main args)
-  (define (version progname)
-    (exit 0 "~a 1.0.0" progname))
-
-  (define (usage progname :key (code 0) (port (current-output-port)))
+  (define progname (sys-basename (car args)))
+  (define (version) (exit 0 "~a 1.0.0" progname))
+  (define (usage :key (code 0) (port (current-output-port)))
     (format port "usage: ~a [options] [file...]\
                 \n    -n, --chars <N>\
                 \n      print the N characters per line (N >= 1)\
@@ -46,23 +45,19 @@
                 \n      place output in file FILE\n"
             progname)
     (exit code))
+  (define (usage-on-error fmt . args)
+    (apply format (current-error-port) fmt args)
+    (usage :code 1 :port (current-error-port)))
 
-  (define (usage-on-error progname)
-    (usage progname :code 1 :oport (current-error-port)))
-
-  (let ([progname (sys-basename (car args))])
-    (let-args (cdr args)
-        ([chars  "n|chars=i" 8]
-         [output "o|output=s" "-"]
-         [#f     "h|help" => (cut usage progname)]
-         [#f     "v|version" => (cut version progname)]
-         [else (opt . _)
-               (format (current-error-port) "Unknown option: ~a\n" opt)
-               (usage-on-error progname)]
-         . files)
-      (unless (>= chars 1)
-        (format (current-error-port) "Option -n, --chars <N>: must N >= 1\n")
-        (usage-on-error progname))
-      (hcasl chars
-             (if (null? files) (list (current-input-port)) files)
-             output))))
+  (let-args (cdr args)
+      ([chars  "n|chars=i" 8]
+       [output "o|output=s" "-"]
+       [#f     "h|help" => usage]
+       [#f     "v|version" => version]
+       [else (opt . _) (usage-on-error "Unknown option: ~a\n" opt)]
+       . files)
+    (unless (>= chars 1)
+      (usage-on-error "Option -n, --chars <N>: must N >= 1\n"))
+    (hcasl chars
+           (if (null? files) (list (current-input-port)) files)
+           output)))
