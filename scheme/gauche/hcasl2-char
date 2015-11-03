@@ -1,0 +1,68 @@
+#!/usr/bin/env gosh
+;;; -*- coding: utf-8 -*-
+;;; vim:fileencoding=UTF-8
+
+;; lazy sequence版
+
+(use gauche.parseopt)
+(use gauche.lazy)
+
+(define (port->char-lseq :optional (port (current-input-port)))
+  (generator->lseq (cut read-char port)))
+
+(define (shift-slice lis n)
+  (apply lmap list (map (cut drop* lis <>) (iota n))))
+
+(define (process-1 port n)
+  (dolist [r (shift-slice (port->char-lseq port) n)]
+    (for-each write-char r) (newline)))
+
+;; inputs - ポートもしくはファイル名のリスト
+;; return - 0 on success, 1 on error
+(define (process-multi inputs n)
+  (fold (^[in c]
+          (guard (e [else (format (current-error-port) "~s\n" (~ e'message))
+                          1])
+            (cond [(port? in) (process-1 in n)]
+                  [(equal? in "-") (process-1 (current-input-port) n)]
+                  [else (call-with-input-file in (cut process-1 <> n))])
+            c))
+        0 inputs))
+
+(define (hcasl n inputs output)
+  (if (equal? output "-")
+    (with-output-to-port (current-output-port) (cut process-multi inputs n))
+    (with-output-to-file output (cut process-multi inputs n))))
+
+(define (main args)
+  (define (version progname)
+    (exit 0 "~a 1.0.0" progname))
+
+  (define (usage progname :key (code 0) (port (current-output-port)))
+    (format port "usage: ~a [options] [file...]\
+                \n    -n, --chars <N>\
+                \n      print the N characters per line (N >= 1)\
+                \n    -o, --output <FILE>\
+                \n      place output in file FILE\n"
+            progname)
+    (exit code))
+
+  (define (usage-on-error progname)
+    (usage progname :code 1 :oport (current-error-port)))
+
+  (let ([progname (sys-basename (car args))])
+    (let-args (cdr args)
+        ([chars  "n|chars=i" 8]
+         [output "o|output=s" "-"]
+         [#f     "h|help" => (cut usage progname)]
+         [#f     "v|version" => (cut version progname)]
+         [else (opt . _)
+               (format (current-error-port) "Unknown option: ~a\n" opt)
+               (usage-on-error progname)]
+         . files)
+      (unless (>= chars 1)
+        (format (current-error-port) "Option -n, --chars <N>: must N >= 1\n")
+        (usage-on-error progname))
+      (hcasl chars
+             (if (null? files) (list (current-input-port)) files)
+             output))))
