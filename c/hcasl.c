@@ -2,7 +2,7 @@
 /**
  * @brief   Command line tool for "head -c N && shift 1 byte" loop.
  * @author  eel3
- * @date    2015/10/18
+ * @date    2015/11/05
  *
  * @par Compilers
  * - TDM-GCC 4.8.1 (Windows 7 64bit SP1)
@@ -26,6 +26,17 @@
 #include <string.h>
 
 #include <unistd.h>
+
+#if defined(_WIN32) || defined(_WIN64)
+#	include <fcntl.h>
+#	include <io.h>
+#	ifndef STDIN_FILENO
+#		define STDIN_FILENO 0
+#	endif
+#	ifndef STDOUT_FILENO
+#		define STDOUT_FILENO 1
+#	endif
+#endif /* defined(_WIN32) || defined(_WIN64) */
 
 
 /* ---------------------------------------------------------------------- */
@@ -488,6 +499,19 @@ main(int argc, char *argv[])
 	QUEUE buf;
 
 	program_name = my_basename(argv[0]);
+
+#if defined(_WIN32) || defined(_WIN64)
+	errno = 0;
+	if (_setmode(STDIN_FILENO, O_BINARY) == -1) {
+		perror("_setmode");
+		return EXIT_FAILURE;
+	}
+	errno = 0;
+	if (_setmode(STDOUT_FILENO, O_BINARY) == -1) {
+		perror("_setmode");
+		return EXIT_FAILURE;
+	}
+#endif /* defined(_WIN32) || defined(_WIN64) */
 
 	bytes = 8;
 	output = "-";
