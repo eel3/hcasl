@@ -2,13 +2,13 @@
 # encoding: utf-8
 # -*- coding: utf-8 -*-
 # vim:fileencoding=UTF-8
-# @(#) Command line tool for "head -c N && shift 1 byte" loop. Version 1.0.1.20151103
+# @(#) Command line tool for "head -c N && shift 1 byte" loop. Version 1.0.2.20151105
 
 =head1 DESCRIPTION
 
 brief   Command line tool for "head -c N && shift 1 byte" loop
 author  eel3
-date    2015-11-02
+date    2015-11-05
 
 note  perl 5.14.2 @ Ubuntu 12.04.5 LTS x86 32bit
 note  perl 5.22.0 cygwin-64bit @ Windows 7 Ultimate 64bit SP1
@@ -34,18 +34,6 @@ use Pod::Usage qw/pod2usage/;
 sub error {
     say STDERR @_;
     exit 1;
-}
-
-sub hcasl {
-    my ($istream, $ostream, $bytes, $buf) = @_;
-
-    while (defined(my $c = getc $istream)) {
-        push @$buf, $c;
-        if (@$buf >= $bytes) {
-            say $ostream join '', @$buf;
-            shift @$buf;
-        }
-    }
 }
 
 sub main {
@@ -75,24 +63,18 @@ sub main {
 
     my $retval = 0;
     my @buf = ();
-    if (@ARGV == 0) {
-        hcasl(*STDIN, $ostream, $opt{bytes}, \@buf);
-    } else {
-        my $istream;
-        for (@ARGV) {
-            if ($_ eq '-') {
-                $istream = *STDIN;
-            } else {
-                unless (open $istream, '<', $_) {
-                    say STDERR "$0: $_: cannot open";
-                    $retval = 1;
-                    next;
-                }
-            }
-            hcasl($istream, $ostream, $opt{bytes}, \@buf);
-            close $istream unless $istream eq *STDIN;
+    local $/ = \1;
+    local $!;
+
+    for ($! = 0; <>; $! = 0) {
+        $retval = 1 unless $! == 0;
+        push @buf, $_;
+        if (@buf >= $opt{bytes}) {
+            say $ostream join '', @buf;
+            shift @buf;
         }
     }
+    $retval = 1 unless $! == 0;
 
     close $ostream unless $ostream eq *STDOUT;
 
