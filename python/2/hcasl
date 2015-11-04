@@ -2,7 +2,7 @@
 # encoding: utf-8
 # -*- coding: utf-8 -*-
 # vim:fileencoding=UTF-8
-# @(#) Command line tool for "head -c N && shift 1 byte" loop. Version 1.0.0.20151011
+# @(#) Command line tool for "head -c N && shift 1 byte" loop. Version 1.0.1.20151103
 
 from __future__ import print_function
 
@@ -48,6 +48,7 @@ if output != '-':
         sys.exit(1)
 
 buf = collections.deque()
+retval = 0
 
 if len(args[1]) <= 0:
     hcasl(sys.stdin, ostream, bytes, buf)
@@ -62,6 +63,9 @@ else:
                 istream.close()
             except IOError as e:
                 print(e[1], sys.stderr)
+                retval = 1
 
 if ostream != sys.stdout:
     ostream.close()
+
+sys.exit(retval)
