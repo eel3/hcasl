@@ -2,7 +2,7 @@
 # encoding: utf-8
 # -*- coding: utf-8 -*-
 # vim:fileencoding=UTF-8
-# @(#) Command line tool for "head -c N && shift 1 byte" loop. Version 1.0.0.20151015
+# @(#) Command line tool for "head -c N && shift 1 byte" loop. Version 1.0.1.20151104
 
 require 'optparse'
 
@@ -33,13 +33,22 @@ OptionParser.new {|op|
   end
 }
 
+retval = 0
 buf = []
-ARGF.each_byte do |c|
-  buf.push c.chr
-  if buf.size >= bytes
-    ostream.puts buf.join('')
-    buf.shift
+begin
+  ARGF.each_byte do |c|
+    buf.push c.chr
+    if buf.size >= bytes
+      ostream.puts buf.join('')
+      buf.shift
+    end
   end
+rescue Errno::ENOENT => e
+  STDERR.puts e
+  retval = 1
+  retry
 end
 
 ostream.close unless ostream == STDOUT
+
+exit retval
