@@ -77,6 +77,7 @@ hcasl is written in several programming languages. Choose one among them.
 
 1. Install Tcl 8.6.4-5 or later.
 2. Put hcasl-char in a directory registered in PATH.
+3. (Optional) Put hcasl-char-recur in a directory registered in PATH.
 
 Usage
 -----
