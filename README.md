@@ -73,6 +73,12 @@ hcasl is written in several programming languages. Choose one among them.
 2. Put hcasl in a directory registered in PATH.
 3. (Optional) Put hcasl-char in a directory registered in PATH.
 
+### For Shell/bash implementation:
+
+1. Install bash 4.2.25 or later.
+2. Put hcasl in a directory registered in PATH.
+3. (Optional) Put hcasl-posix-like in a directory registered in PATH.
+
 ### For Tcl 8.6 implementation:
 
 1. Install Tcl 8.6.4-5 or later.
