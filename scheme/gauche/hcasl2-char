@@ -3,6 +3,7 @@
 ;;; vim:fileencoding=UTF-8
 
 ;; lazy sequence版
+;; http://blog.practical-scheme.net/shiro/20151103-gauche-example
 
 (use gauche.parseopt)
 (use gauche.lazy)
