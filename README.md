@@ -93,6 +93,18 @@ hcasl is written in several programming languages. Choose one among them.
 4. (Optional) Put hcasl-posix-like in a directory registered in PATH.
 5. (Optional) `ln -s hcasl-posix-like hcasl-char-posix-like`.
 
+### For Shell/sh implementation:
+
+1. Install Bourne shell variants.
+  * BusyBox 1.18.5 or later.
+  * bash 4.2.25 or later.
+  * dash 0.5.7 or later.
+2. Install AWK variants.
+  * BusyBox 1.18.5 or later.
+  * Gawk 3.1.8 or later.
+  * mawk 1.3.3 or later.
+3. Put hcasl in a directory registered in PATH.
+
 ### For Tcl 8.6 implementation:
 
 1. Install Tcl 8.6.4-5 or later.
