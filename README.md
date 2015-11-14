@@ -44,6 +44,12 @@ hcasl is written in several programming languages. Choose one among them.
 | MinGW/TDM-GCC (with GNU make)      | Makefile\_mingw          |
 | MinGW-w64/TDM64-GCC (32bit binary) | Makefile\_mingw64\_32bit |
 
+### For D (DMD 2.069.0) implementation:
+
+1. Install [DMD](http://dlang.org/ "Official website") 2.069.0 or later.
+2. Compile hcasl.d (`dmd hcasl.d`).
+3. Put hcasl in a directory registered in PATH.
+
 ### For Go 1.4 implementation:
 
 1. Install [Go](https://golang.org/ "Official website") 1.4.2 or later.
