@@ -69,7 +69,7 @@ hcasl is written in several programming languages. Choose one among them.
 
 ### For Scheme/Gauche implementation:
 
-1. Install Gauche 0.9.4 or later.
+1. Install [Gauche](http://practical-scheme.net/gauche/ "Official website") 0.9.4 or later.
 2. Put hcasl in a directory registered in PATH.
 3. (Optional) Put hcasl-char in a directory registered in PATH.
 
