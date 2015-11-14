@@ -57,6 +57,12 @@ hcasl is written in several programming languages. Choose one among them.
 3. Put hcasl in a directory registered in PATH.
 4. (Optional) Compile hcasl-char.go, and then put hcasl-char in a directory registered in PATH.
 
+### For JVM/Groovy implementation:
+
+1. Install [Groovy](http://www.groovy-lang.org/ "Official website") 2.4.5 or later.
+2. Put hcasl in a directory registered in PATH.
+3. (Optional) Put hcasl-char in a directory registered in PATH.
+
 ### For Perl 5 implementation:
 
 1. Install Perl 5.14.2 or later.

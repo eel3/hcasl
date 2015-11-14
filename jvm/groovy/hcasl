@@ -1,0 +1,87 @@
+#!/usr/bin/env groovy
+// -*- coding: utf-8 -*-
+// vim:fileencoding=UTF-8
+// Command line tool for "head -c N && shift 1 byte" loop. Version 1.0.0.20151113
+
+import groovy.transform.CompileStatic
+
+@CompileStatic
+def static hcasl(InputStream input, OutputStream output, int bytes, List buf) {
+  input.eachByte {
+    buf << it
+    if (buf.size() >= bytes) {
+      output << (buf as byte[])
+      output << '\n'
+      buf.removeAt 0
+    }
+  }
+}
+
+@CompileStatic
+def static main(String[] args) {
+  def progName = new File(this.class.protectionDomain.codeSource.location.file).name
+
+  def cli = new CliBuilder(usage: progName + ' [options] [file...]')
+  cli.with {
+    stopAtNonOption = false
+    writer = new java.io.PrintWriter(System.err)
+    h longOpt:'help', 'show this help message and exit'
+    n longOpt:'bytes', argName: 'N',   args: 1, 'print the N bytes per line (N >= 1)'
+    o longOpt:'output', argName: 'FILE', args: 1, "place output in file FILE, or stdout (`-')"
+    v longOpt:'version', "show program's version number and exit"
+  }
+  def opt = cli.parse args
+  if (!opt) {
+    System.exit 1
+  }
+  if (opt.h) {
+    cli.usage()
+    System.exit 0
+  }
+  if (opt.v) {
+    println progName + ' 1.0.0'
+    System.exit 0
+  }
+
+  def bytes = 8
+  if (opt.n) {
+    try {
+      bytes = Integer.decode opt.n
+      if (bytes <= 0) {
+        throw new RuntimeException()
+      }
+    } catch (e) {
+      cli.usage()
+      System.exit 1
+    }
+  }
+
+  def output = System.out
+  if (opt.o && opt.o != '-') {
+    try {
+      output = new FileOutputStream(opt.o)
+    } catch (e) {
+      System.err.println e.getLocalizedMessage()
+      System.exit 1
+    }
+  }
+
+  def files = opt.arguments()
+  if (files.isEmpty()) {
+    files.push '-'
+  }
+  def buf = []
+  def retval = 0
+
+  files.each {
+    try {
+      def input = (it == '-') ? System.in : new FileInputStream(it)
+      hcasl input, output, bytes, buf
+    } catch (e) {
+      System.err.println e.getLocalizedMessage()
+      retval = 1
+    }
+  }
+
+  System.exit retval
+}
