@@ -70,7 +70,7 @@ hcasl is written in several programming languages. Choose one among them.
 
 ### For Python 2.x implementation:
 
-1. Install Python 2.7.3 or later.
+1. Install Python 2.7.13 or later.
 2. Put hcasl in a directory registered in PATH.
 
 ### For Ruby implementation:
