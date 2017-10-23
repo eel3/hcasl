@@ -96,13 +96,13 @@ hcasl is written in several programming languages. Choose one among them.
 ### For Shell/sh implementation:
 
 1. Install Bourne shell variants.
-  * BusyBox 1.18.5 or later.
-  * bash 4.2.25 or later.
-  * dash 0.5.7 or later.
+    * BusyBox 1.18.5 or later.
+    * bash 4.2.25 or later.
+    * dash 0.5.7 or later.
 2. Install AWK variants.
-  * BusyBox 1.18.5 or later.
-  * Gawk 3.1.8 or later.
-  * mawk 1.3.3 or later.
+    * BusyBox 1.18.5 or later.
+    * Gawk 3.1.8 or later.
+    * mawk 1.3.3 or later.
 3. Put hcasl in a directory registered in PATH.
 
 ### For Tcl 8.6 implementation:
