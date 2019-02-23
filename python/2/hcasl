@@ -47,7 +47,7 @@ def main():
         try:
             ostream = open(args[0].output, 'wb')
         except IOError as e:
-            print(e[1], sys.stderr)
+            print(e[1], file=sys.stderr)
             sys.exit(1)
 
     if len(args[1]) <= 0:
@@ -64,7 +64,7 @@ def main():
                 with open(input, 'rb') as istream:
                     hcasl(istream, ostream, bytes, buf)
             except IOError as e:
-                print(e[1], sys.stderr)
+                print(e[1], file=sys.stderr)
                 retval = 1
 
     if ostream != sys.stdout:
