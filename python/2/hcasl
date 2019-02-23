@@ -24,9 +24,9 @@ def parse_args():
     parser = argparse.ArgumentParser(description=
             'Command line tool for "head -c N && shift 1 byte" loop.')
 
-    parser.add_argument('-n', '--bytes', nargs='?', const=8, default=8, type=int,
+    parser.add_argument('-n', '--bytes', nargs=1, default=[8], type=int,
                         help='print the BYTES bytes per line (BYTES >= 1)')
-    parser.add_argument('-o', '--output', nargs='?', const='-', default='-',
+    parser.add_argument('-o', '--output', nargs=1, default=['-'],
                         help="place output in file OUTPUT")
     parser.add_argument('-v', '--version', action='version',
                         version='%(prog)s 1.0.3')
@@ -37,15 +37,16 @@ def parse_args():
 def main():
     args = parse_args()
 
-    bytes = args[0].bytes
+    bytes = args[0].bytes[0]
     if bytes <= 0:
         print('error: -n/--bytes must be greater or equal to 1', file=sys.stderr)
         sys.exit(1)
 
     ostream = sys.stdout
-    if args[0].output != '-':
+    output = args[0].output[0]
+    if output != '-':
         try:
-            ostream = open(args[0].output, 'wb')
+            ostream = open(output, 'wb')
         except IOError as e:
             print(e, file=sys.stderr)
             sys.exit(1)
