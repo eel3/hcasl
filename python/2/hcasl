@@ -2,7 +2,7 @@
 # encoding: utf-8
 # -*- coding: utf-8 -*-
 # vim:fileencoding=UTF-8
-# @(#) Command line tool for "head -c N && shift 1 byte" loop. Version 1.0.2.20170606
+# @(#) Command line tool for "head -c N && shift 1 byte" loop. Version 1.0.3.20190221
 
 from __future__ import print_function
 
@@ -29,7 +29,7 @@ def parse_args():
     parser.add_argument('-o', '--output', nargs='?', const='-', default='-',
                         help="place output in file OUTPUT")
     parser.add_argument('-v', '--version', action='version',
-                        version='%(prog)s 1.0.2')
+                        version='%(prog)s 1.0.3')
 
     return parser.parse_known_args()
 
@@ -39,7 +39,7 @@ def main():
 
     bytes = args[0].bytes
     if bytes <= 0:
-        parser.print_help(sys.stderr)
+        print('error: -n/--bytes must be greater or equal to 1', file=sys.stderr)
         sys.exit(1)
 
     ostream = sys.stdout
