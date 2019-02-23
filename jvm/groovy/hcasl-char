@@ -1,16 +1,16 @@
 #!/usr/bin/env groovy
 // -*- coding: utf-8 -*-
 // vim:fileencoding=UTF-8
-// Command line tool for "head -c N && shift 1 byte" loop. Version 1.0.0.20151113
+// Command line tool for "head -c N && shift 1 char" loop. Version 1.0.1.20190224
 
 import groovy.transform.CompileStatic
 
 @CompileStatic
-def static hcasl(InputStreamReader input, OutputStreamWriter output, int bytes, List buf) {
+def static hcasl(InputStreamReader input, OutputStreamWriter output, int chars, List buf) {
   def c
   while ((c = input.read()) != -1) {
     buf << c
-    if (buf.size() >= bytes) {
+    if (buf.size() >= chars) {
       buf.each {
         output.write (it as int)
       }
@@ -30,7 +30,7 @@ def static main(String[] args) {
     stopAtNonOption = false
     writer = new java.io.PrintWriter(System.err)
     h longOpt:'help', 'show this help message and exit'
-    n longOpt:'bytes', argName: 'N',   args: 1, 'print the N bytes per line (N >= 1)'
+    n longOpt:'chars', argName: 'N',   args: 1, 'print the N characters per line (N >= 1)'
     o longOpt:'output', argName: 'FILE', args: 1, "place output in file FILE, or stdout (`-')"
     v longOpt:'version', "show program's version number and exit"
   }
@@ -43,15 +43,15 @@ def static main(String[] args) {
     System.exit 0
   }
   if (opt.v) {
-    println progName + ' 1.0.0'
+    println progName + ' 1.0.1'
     System.exit 0
   }
 
-  def bytes = 8
+  def chars = 8
   if (opt.n) {
     try {
-      bytes = Integer.decode opt.n
-      if (bytes <= 0) {
+      chars = Integer.decode opt.n
+      if (chars <= 0) {
         throw new RuntimeException()
       }
     } catch (e) {
@@ -80,7 +80,7 @@ def static main(String[] args) {
   files.each {
     try {
       def input = (it == '-') ? new InputStreamReader(System.in) : new FileReader(it)
-      hcasl input, output, bytes, buf
+      hcasl input, output, chars, buf
     } catch (e) {
       System.err.println e.getLocalizedMessage()
       retval = 1
