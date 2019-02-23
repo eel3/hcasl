@@ -1,0 +1,75 @@
+#!/usr/bin/env python3
+# encoding: utf-8
+# -*- coding: utf-8 -*-
+# vim:fileencoding=UTF-8
+# @(#) Command line tool for "head -c N && shift 1 byte" loop. Version 1.0.0.20190224
+
+import argparse
+import collections
+import functools
+import sys
+
+
+def hcasl(istream, ostream, bytes, buf):
+    for s in iter(functools.partial(istream.read, 1), b''):
+        buf.append(s)
+        if len(buf) >= bytes:
+            ostream.write(b''.join((s for s in buf)) + b'\n')
+            buf.popleft()
+
+
+def parse_args():
+    parser = argparse.ArgumentParser(description=
+            'Command line tool for "head -c N && shift 1 byte" loop.')
+
+    parser.add_argument('-n', '--bytes', nargs=1, default=[8], type=int,
+                        help='print the BYTES bytes per line (BYTES >= 1)')
+    parser.add_argument('-o', '--output', nargs=1, default=['-'],
+                        help="place output in file OUTPUT")
+    parser.add_argument('-v', '--version', action='version',
+                        version='%(prog)s 1.0.0')
+
+    return parser.parse_known_args()
+
+
+def main():
+    args = parse_args()
+
+    bytes = args[0].bytes[0]
+    if bytes <= 0:
+        print('error: -n/--bytes must be greater or equal to 1', file=sys.stderr)
+        sys.exit(1)
+
+    ostream = sys.stdout.buffer
+    output = args[0].output[0]
+    if output != '-':
+        try:
+            ostream = open(output, 'wb')
+        except OSError as e:
+            print(e, file=sys.stderr)
+            sys.exit(1)
+
+    if len(args[1]) <= 0:
+        args[1].append('-')
+
+    buf = collections.deque()
+    retval = 0
+
+    for input in args[1]:
+        if input == '-':
+            hcasl(sys.stdin.buffer, ostream, bytes, buf)
+        else:
+            try:
+                with open(input, 'rb') as istream:
+                    hcasl(istream, ostream, bytes, buf)
+            except OSError as e:
+                print(e, file=sys.stderr)
+                retval = 1
+
+    if ostream != sys.stdout:
+        ostream.close()
+
+    sys.exit(retval)
+
+if __name__ == '__main__':
+    main();
