@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 # encoding: utf-8
-# -*- coding: utf-8 -*-
-# vim:fileencoding=UTF-8
+# -*- coding: utf-8-unix -*-
+# vim:fileencoding=utf-8:ff=unix
 # @(#) Command line tool for "head -c N && shift 1 byte" loop. Version 1.0.1.20151104
 
 require 'optparse'
