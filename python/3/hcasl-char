@@ -3,6 +3,8 @@
 # -*- coding: utf-8-unix -*-
 # vim:fileencoding=utf-8:ff=unix
 # @(#) Command line tool for "head -c N && shift 1 char" loop. Version 1.0.0.20190224
+"""Command line tool for 'head -c N && shift 1 char' loop.
+"""
 
 import argparse
 import collections
@@ -11,6 +13,14 @@ import sys
 
 
 def hcasl(istream, ostream, chars, buf):
+    """Do a job.
+
+    Args:
+        istream (TextIO): Input text IO stream.
+        ostream (TextIO): Output text IO stream.
+        chars (int): Num of characters print per line.
+        buf (deque): Working buffer.
+    """
     for s in iter(functools.partial(istream.read, 1), ''):
         buf.append(s)
         if len(buf) >= chars:
@@ -19,6 +29,11 @@ def hcasl(istream, ostream, chars, buf):
 
 
 def parse_args():
+    """Pares CLI arguments.
+
+    Returns:
+        tuple[argparse.Namespace, list[str]]: Results of argument parsing.
+    """
     parser = argparse.ArgumentParser(description=
             'Command line tool for "head -c N && shift 1 char" loop.')
 
@@ -33,6 +48,8 @@ def parse_args():
 
 
 def main():
+    """Main routine function.
+    """
     args = parse_args()
 
     chars = args[0].chars[0]
