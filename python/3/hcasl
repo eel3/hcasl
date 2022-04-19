@@ -29,7 +29,7 @@ def hcasl(istream, ostream, bytes, buf):
 
 
 def parse_args():
-    """Pares CLI arguments.
+    """Parse CLI arguments.
 
     Returns:
         tuple[argparse.Namespace, list[str]]: Results of argument parsing.
