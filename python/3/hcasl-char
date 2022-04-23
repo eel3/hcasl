@@ -2,24 +2,31 @@
 # encoding: utf-8
 # -*- coding: utf-8-unix -*-
 # vim:fileencoding=utf-8:ff=unix
-# @(#) Command line tool for "head -c N && shift 1 char" loop. Version 1.0.1.20220417
+# @(#) Command line tool for "head -c N && shift 1 char" loop. Version 1.0.2.20220420
 """Command line tool for 'head -c N && shift 1 char' loop.
 """
+
+from __future__ import annotations
 
 import argparse
 import collections
 import functools
 import sys
 
+from typing import NoReturn, TextIO
 
-def hcasl(istream, ostream, chars, buf):
+
+def hcasl(istream: TextIO,
+          ostream: TextIO,
+          chars: int,
+          buf: collections.deque) -> None:
     """Do a job.
 
     Args:
         istream (TextIO): Input text IO stream.
         ostream (TextIO): Output text IO stream.
         chars (int): Num of characters print per line.
-        buf (deque): Working buffer.
+        buf (collections.deque): Working buffer.
     """
     for s in iter(functools.partial(istream.read, 1), ''):
         buf.append(s)
@@ -28,7 +35,7 @@ def hcasl(istream, ostream, chars, buf):
             buf.popleft()
 
 
-def parse_args():
+def parse_args() -> tuple[argparse.Namespace, list[str]]:
     """Parse CLI arguments.
 
     Returns:
@@ -42,12 +49,12 @@ def parse_args():
     parser.add_argument('-o', '--output', nargs=1, default=['-'],
                         help="place output in file OUTPUT")
     parser.add_argument('-v', '--version', action='version',
-                        version='%(prog)s 1.0.1')
+                        version='%(prog)s 1.0.2')
 
     return parser.parse_known_args()
 
 
-def main():
+def main() -> NoReturn:
     """Main routine function.
     """
     args = parse_args()
