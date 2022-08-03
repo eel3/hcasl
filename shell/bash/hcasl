@@ -1,17 +1,17 @@
 #!/usr/bin/env bash
 # -*- coding: utf-8-unix -*-
 # vim:fileencoding=utf-8:ff=unix
-# @(#) Command line tool for "head -c N && shift 1 byte/char" loop. Version 1.0.1.20151109
+# @(#) Command line tool for "head -c N && shift 1 byte/char" loop. Version 1.0.2.20220710
 
 set -u
 umask 0022
-IFS=`printf ' \t\n_'`; IFS=${IFS%_}
+IFS=$(printf ' \t\n_'); IFS=${IFS%_}
 PATH=/bin:/usr/bin
 export IFS PATH
 
-readonly progname=`basename "$0"`
+readonly progname="${0##*/}"
 
-echo $progname | grep -q '^hcasl-char' || export LC_ALL=C LANG=C
+echo "$progname" | grep -q '^hcasl-char' || export LC_ALL=C LANG=C
 
 # usage <status>
 usage() {
@@ -22,12 +22,12 @@ usage() {
 		    -o FILE
 		      place output in file FILE
 	EOT
-    exit $1
+    exit "$1"
 }
 
 # version (nop)
 version() {
-    echo "$progname 1.0.0"
+    echo "$progname 1.0.2"
     exit 0
 }
 
@@ -39,8 +39,7 @@ error() {
 
 # tobytes <bytes>
 tobytes() {
-    (("$1")) 2>/dev/null
-    (($? == 0)) || return 1
+    (("$1")) 2>/dev/null || return 1
     (("$1" >= 1)) || return 1
     echo "$1"
 }
@@ -58,15 +57,14 @@ while getopts 'hn:o:v' opt; do
     \?)     usage 1 1>&2 ;;
     esac
 done
-shift $(($OPTIND - 1))
+shift $((OPTIND - 1))
 
 if [ -z "$bytes" ]; then
     usage 1 1>&2
 fi
 
-if [ -n "$output" -a "$output" != - ]; then
-    { exec >"$output"; } 2>/dev/null
-    (($? == 0)) || error "$output: cannot open"
+if [ -n "$output" ] && [ "$output" != - ]; then
+    { exec >"$output"; } 2>/dev/null || error "$output: cannot open"
 fi
 
 cat ${@+"$@"} | {
@@ -76,11 +74,11 @@ cat ${@+"$@"} | {
     c=
     while read -n 1 -r c; do
         buf+=$c
-        if ((${#buf} >= $bytes)); then
+        if ((${#buf} >= bytes)); then
             echo "$buf"
             buf="${buf#?}"
         fi
     done
 }
 
-exit ${PIPESTATUS[0]}
+exit "${PIPESTATUS[0]}"
